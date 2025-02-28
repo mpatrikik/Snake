@@ -8,9 +8,10 @@ score_font = pygame.font.Font(None, 40)
 
 GREEN = (173, 204, 96)
 DARK_GREEN = (43, 51, 24)
+BLACK = (0, 0, 0)
 
-cell_size = 30
-number_of_cells = 25
+cell_size = 28
+number_of_cells = 23
 
 OFFSET = 75
 
@@ -34,29 +35,34 @@ class Food:
 			position = self.generate_random_cell()
 		return position
 
+
 class Snake:
 	def __init__(self):
-		self.body = [Vector2(6, 9), Vector2(5,9), Vector2(4,9)]
+		self.body = [Vector2(6, 9), Vector2(5,9)]
 		self.direction = Vector2(1, 0)
 		self.add_segment = False
 		self.eat_sound = pygame.mixer.Sound("Sounds/eat.mp3")
 		self.wall_hit_sound = pygame.mixer.Sound("Sounds/wall.mp3")
 
 	def draw(self):
-		for segment in self.body:
-			segment_rect = (OFFSET + segment.x * cell_size, OFFSET+ segment.y * cell_size, cell_size, cell_size)
-			pygame.draw.rect(screen, DARK_GREEN, segment_rect, 0, 7)
+		HEAD_COLOR = (138, 81, 7)
+		BODY_COLOR = DARK_GREEN
+		for index, segment in enumerate(self.body):
+			segment_rect = (OFFSET + segment.x * cell_size, OFFSET + segment.y * cell_size, cell_size, cell_size)
+			color = HEAD_COLOR if index == 0 else BODY_COLOR
+			pygame.draw.rect(screen, color, segment_rect, 11, 7)
 
 	def update(self):
 		self.body.insert(0, self.body[0] + self.direction)
-		if self.add_segment == True:
+		if self.add_segment:
 			self.add_segment = False
 		else:
 			self.body = self.body[:-1]
 
 	def reset(self):
-		self.body = [Vector2(6,9), Vector2(5,9), Vector2(4,9)]
+		self.body = [Vector2(6,9), Vector2(5,9)]
 		self.direction = Vector2(1, 0)
+
 
 class Game:
 	def __init__(self):
@@ -103,7 +109,7 @@ class Game:
 
 screen = pygame.display.set_mode((2*OFFSET + cell_size*number_of_cells, 2*OFFSET + cell_size*number_of_cells))
 
-pygame.display.set_caption("Retro Snake")
+pygame.display.set_caption("Snake")
 
 clock = pygame.time.Clock()
 
@@ -111,7 +117,7 @@ game = Game()
 food_surface = pygame.image.load("Graphics/apple.png")
 
 SNAKE_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(SNAKE_UPDATE, 200)
+pygame.time.set_timer(SNAKE_UPDATE, 180)
 
 while True:
 	for event in pygame.event.get():
@@ -124,24 +130,24 @@ while True:
 		if event.type == pygame.KEYDOWN:
 			if game.state == "STOPPED":
 				game.state = "RUNNING"
-			if event.key == pygame.K_UP and game.snake.direction != Vector2(0, 1):
+			if event.key in [pygame.K_UP, pygame.K_w] and game.snake.direction != Vector2(0, 1):
 				game.snake.direction = Vector2(0, -1)
-			if event.key == pygame.K_DOWN and game.snake.direction != Vector2(0, -1):
+			if event.key in [pygame.K_DOWN, pygame.K_s] and game.snake.direction != Vector2(0, -1):
 				game.snake.direction = Vector2(0, 1)
-			if event.key == pygame.K_LEFT and game.snake.direction != Vector2(1, 0):
+			if event.key in [pygame.K_LEFT, pygame.K_a] and game.snake.direction != Vector2(1, 0):
 				game.snake.direction = Vector2(-1, 0)
-			if event.key == pygame.K_RIGHT and game.snake.direction != Vector2(-1, 0):
+			if event.key in [pygame.K_RIGHT, pygame.K_d] and game.snake.direction != Vector2(-1, 0):
 				game.snake.direction = Vector2(1, 0)
 
 	#Drawing
 	screen.fill(GREEN)
-	pygame.draw.rect(screen, DARK_GREEN,
-		(OFFSET-5, OFFSET-5, cell_size*number_of_cells+10, cell_size*number_of_cells+10), 5)
+	pygame.draw.rect(screen, BLACK,
+		(OFFSET - 5, OFFSET - 5, cell_size * number_of_cells + 10, cell_size * number_of_cells + 10), 5)
 	game.draw()
-	title_surface = title_font.render("Retro Snake", True, DARK_GREEN)
+	title_surface = title_font.render("Snake", True, DARK_GREEN)
 	score_surface = score_font.render(str(game.score), True, DARK_GREEN)
-	screen.blit(title_surface, (OFFSET-5, 20))
-	screen.blit(score_surface, (OFFSET-5, OFFSET + cell_size*number_of_cells +10))
+	screen.blit(title_surface, (OFFSET - 5, 20))
+	screen.blit(score_surface, (OFFSET - 5, OFFSET + cell_size * number_of_cells + 10))
 
 	pygame.display.update()
-	clock.tick(60)
+	clock.tick(80)
