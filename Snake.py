@@ -59,14 +59,11 @@ class Snake:
 			pygame.draw.rect(screen, color, segment_rect, 11, 7)
 
 	def update(self, dt):
-		move_amount = self.speed * dt
-		next_pos = self.body[0] + self.direction * move_amount
-
-		if (next_pos - self.target_position).length() < move_amount:
-			self.body.insert(0, self.target_position)
-			self.target_position = self.body[0] + self.direction
-			self.body.pop()
-			self.moving = True
+		if not self.moving:
+			return
+		new_head = self.body[0] + self.direction
+		self.body.insert(0, new_head)
+		self.body.pop()
 
 	def reset(self):
 		self.body = [Vector2(6,9), Vector2(5,9)]
@@ -138,12 +135,16 @@ while True:
 				game.state = "RUNNING"
 			if event.key in [pygame.K_UP, pygame.K_w] and game.snake.direction != Vector2(0, 1):
 				game.snake.direction = Vector2(0, -1)
+				game.snake.moving = True
 			if event.key in [pygame.K_DOWN, pygame.K_s] and game.snake.direction != Vector2(0, -1):
 				game.snake.direction = Vector2(0, 1)
+				game.snake.moving = True
 			if event.key in [pygame.K_LEFT, pygame.K_a] and game.snake.direction != Vector2(1, 0):
 				game.snake.direction = Vector2(-1, 0)
+				game.snake.moving = True
 			if event.key in [pygame.K_RIGHT, pygame.K_d] and game.snake.direction != Vector2(-1, 0):
 				game.snake.direction = Vector2(1, 0)
+				game.snake.moving = True
 
 	#Drawing
 	screen.fill(GREEN)
