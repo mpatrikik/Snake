@@ -44,10 +44,11 @@ class Snake:
 	def __init__(self):
 		self.body = [Vector2(6, 9), Vector2(5,9)]
 		self.direction = Vector2(1, 0)
-		self.target_position = self.body[0]
+		self.target_position = self.body[0] + self.direction
 		self.speed = SNAKE_SPEED
 		self.eat_sound = pygame.mixer.Sound("Sounds/eat.mp3")
 		self.wall_hit_sound = pygame.mixer.Sound("Sounds/wall.mp3")
+		self.moving = False
 
 	def draw(self):
 		HEAD_COLOR = (138, 81, 7)
@@ -63,15 +64,15 @@ class Snake:
 
 		if (next_pos - self.target_position).length() < move_amount:
 			self.body.insert(0, self.target_position)
-			self.target_position += self.direction
+			self.target_position = self.body[0] + self.direction
 			self.body.pop()
-
+			self.moving = True
 
 	def reset(self):
 		self.body = [Vector2(6,9), Vector2(5,9)]
 		self.direction = Vector2(1, 0)
-		self.target_position = self.body[0]
-
+		self.target_position = self.body[0] + self.direction
+		self.moving = False
 
 class Game:
 	def __init__(self):
@@ -87,9 +88,10 @@ class Game:
 	def update(self, dt):
 		if self.state == "RUNNING":
 			self.snake.update(dt)
-			self.check_collision_with_food()
-			self.check_collision_with_edges()
-			self.check_collision_with_tail()
+			if self.snake.moving:
+				self.check_collision_with_food()
+				self.check_collision_with_edges()
+				self.check_collision_with_tail()
 
 	def check_collision_with_food(self):
 		if self.snake.body[0] == self.food.position:
@@ -99,9 +101,10 @@ class Game:
 			self.snake.eat_sound.play()
 
 	def check_collision_with_edges(self):
-		if self.snake.body[0].x == number_of_cells or self.snake.body[0].x == -1:
-			self.game_over()
-		if self.snake.body[0].y == number_of_cells or self.snake.body[0].y == -1:
+		if not self.snake.body:
+			return
+		head = self.snake.body[0]
+		if head.x >= number_of_cells or head.x < 0 or head.y >= number_of_cells or head.y < 0:
 			self.game_over()
 
 	def game_over(self):
