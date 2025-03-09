@@ -1,3 +1,5 @@
+import json
+import os.path
 import pygame, sys, random
 from pygame.math import Vector2
 
@@ -70,6 +72,7 @@ class Game:
 		self.food = Food(self.snake.body)
 		self.state = "RUNNING"
 		self.score = 0
+		self.hiscore = self.load_hiscore()
 
 	def draw(self):
 		self.food.draw()
@@ -96,6 +99,9 @@ class Game:
 			self.game_over()
 
 	def game_over(self):
+		if self.score > self.hiscore:
+			self.hiscore = self.score
+			self.save_hiscore()
 		self.snake.reset()
 		self.food.position = self.food.generate_random_pos(self.snake.body)
 		self.state = "STOPPED"
@@ -106,6 +112,20 @@ class Game:
 		headless_body = self.snake.body[1:]
 		if self.snake.body[0] in headless_body:
 			self.game_over()
+
+	def load_hiscore(self):
+		if os.path.exists("hiscore.json"):
+			try:
+				with open("hiscore.json", "r") as file:
+					data = json.load(file)
+					return data.get("hiscore", 0)
+			except json.JSONDecodeError:
+				return 0
+		return 0
+
+	def save_hiscore(self):
+		with open("hiscore.json", "w") as file:
+			json.dump({"hiscore": self.hiscore}, file)
 
 screen = pygame.display.set_mode((2*OFFSET + cell_size*number_of_cells, 2*OFFSET + cell_size*number_of_cells))
 
@@ -141,13 +161,14 @@ while True:
 
 	#Drawing
 	screen.fill(GREEN)
-	pygame.draw.rect(screen, BLACK,
-		(OFFSET - 5, OFFSET - 5, cell_size * number_of_cells + 10, cell_size * number_of_cells + 10), 5)
+	pygame.draw.rect(screen, BLACK, (OFFSET - 5, OFFSET - 5, cell_size * number_of_cells + 10, cell_size * number_of_cells + 10), 5)
 	game.draw()
 	title_surface = title_font.render("Snake", True, DARK_GREEN)
-	score_surface = score_font.render(str(game.score), True, DARK_GREEN)
+	score_surface = score_font.render(str(game.score), True, DARK_GREEN,)
+	hi_score_surface = score_font.render(f"Highest score: {game.hiscore}", True, BLACK)
 	screen.blit(title_surface, (OFFSET - 5, 20))
-	screen.blit(score_surface, (OFFSET - 5, OFFSET + cell_size * number_of_cells + 10))
+	screen.blit(score_surface, (OFFSET + 250, 30))
+	screen.blit(hi_score_surface, (OFFSET - 5, OFFSET + cell_size * number_of_cells + 20))
 
 	pygame.display.update()
 	clock.tick(80)
