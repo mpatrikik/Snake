@@ -10,8 +10,8 @@ GREEN = (173, 204, 96)
 DARK_GREEN = (43, 51, 24)
 BLACK = (0, 0, 0)
 
-cell_size = 28
-number_of_cells = 23
+cell_size = 26
+number_of_cells = 22
 
 OFFSET = 75
 
